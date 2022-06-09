@@ -1,14 +1,14 @@
 package service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
+
+import comparator.VertexComparator;
 import model.Edge;
 import model.MyTree;
 import model.Path;
 import model.Vertex;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 09/06/2022.
@@ -17,49 +17,51 @@ import java.util.Map;
  */
 public class DijkstraService {
 
-    public Iterable<Path> findShortestPath(final MyTree tree, final Vertex start, final Vertex end) {
+	public Iterable<Path> findShortestPath(final MyTree tree, final Vertex start, final Vertex end) {
 
-        Vertex currentVertex = start;
-        int currentDistance = 0;
+		Vertex currentVertex = start;
+		int currentDistance = 0;
 
-        final List<Path> currentPaths = new ArrayList<>();
-        final List<Vertex> unvisitedVertex = tree.getVertices();
-        final Map<Vertex, Integer> tentativeDistance = new HashMap<>();
+		final List<Path> currentPaths = new ArrayList<>();
+		final PriorityQueue<Vertex> unvisitedVertex = new PriorityQueue<>(
+				tree.getVertices().size(),
+				new VertexComparator());
 
-        tentativeDistance.put(start, 0);
+		unvisitedVertex.addAll(tree.getVertices());
 
-        for (Edge edge : currentVertex.getEdges()) {
+		start.setDistanceToOrigin(0);
+		unvisitedVertex.remove(start);
 
-            final Vertex neighbor = edge.getVertex2();
-            final int pathLengthToNeighbor = currentDistance + edge.getDistance();
-            int distanceToCompare;
+		for (Edge edge : currentVertex.getEdges()) {
 
-            if (!unvisitedVertex.contains(neighbor)) {
-                break;
-            }
+			final Vertex neighbor = edge.getVertexEnd();
+			final int pathLengthToNeighbor = currentDistance + edge.getDistance();
+			int distanceToCompare;
 
-            distanceToCompare = tentativeDistance.get(neighbor);
+			if (!unvisitedVertex.contains(neighbor)) {
+				break;
+			}
 
-            if (pathLengthToNeighbor < distanceToCompare) {
+			distanceToCompare = neighbor.getDistanceToOrigin();
 
-                tentativeDistance.put(neighbor, pathLengthToNeighbor);
-            }
-        }
+			if (distanceToCompare == -1 || pathLengthToNeighbor < distanceToCompare) {
 
-        unvisitedVertex.remove(currentVertex);
+				neighbor.setDistanceToOrigin(pathLengthToNeighbor);
 
-        if (currentVertex == end) {
+			}
+		}
 
-            return currentPaths;
-        }
+		unvisitedVertex.remove(currentVertex);
 
+		if (currentVertex == end) {
 
-        //  unvisitedVertex.
+			return currentPaths;
+		}
 
+		unvisitedVertex.peek();
 
-        return currentPaths;
+		return currentPaths;
 
-    }
-
+	}
 
 }

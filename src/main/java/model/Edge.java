@@ -12,9 +12,8 @@ import lombok.Value;
 @Value
 public class Edge {
 
-    Vertex vertex1;
-    Vertex vertex2;
-    int distance;
-
+	Vertex vertexStart;
+	Vertex vertexEnd;
+	int distance;
 
 }
