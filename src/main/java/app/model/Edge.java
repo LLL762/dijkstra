@@ -1,4 +1,4 @@
-package model;
+package app.model;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -12,8 +12,8 @@ import lombok.Value;
 @Value
 public class Edge {
 
-	Vertex vertexStart;
-	Vertex vertexEnd;
-	int distance;
+    Vertex vertexStart;
+    Vertex vertexEnd;
+    int distance;
 
 }
