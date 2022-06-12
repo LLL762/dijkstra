@@ -12,8 +12,14 @@ import lombok.Value;
 @Value
 public class Edge {
 
-    Vertex vertexStart;
-    Vertex vertexEnd;
-    int distance;
+	Vertex vertexStart;
+	Vertex vertexEnd;
+	int distance;
+
+	@Override
+	public String toString() {
+		return "Edge [vertexStart=" + vertexStart.getId() + ", vertexEnd=" + vertexEnd.getId() + ", distance="
+				+ distance + "]";
+	}
 
 }
