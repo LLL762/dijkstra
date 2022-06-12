@@ -12,14 +12,13 @@ import lombok.Value;
 @Value
 public class Edge {
 
-	Vertex vertexStart;
-	Vertex vertexEnd;
+	Long vertexEndId;
 	int distance;
 
-	@Override
-	public String toString() {
-		return "Edge [vertexStart=" + vertexStart.getId() + ", vertexEnd=" + vertexEnd.getId() + ", distance="
-				+ distance + "]";
+	public Edge copy() {
+
+		return new Edge(this.vertexEndId, this.distance);
+
 	}
 
 }

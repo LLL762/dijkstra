@@ -1,14 +1,17 @@
 package app.service;
 
-import java.util.ArrayList;
+import static app.utility.VertexUtility.getDijktraVertexById;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import app.comparator.VertexComparator;
+import app.comparator.DijktraVertexComparator;
 import app.exception.NoPathExist;
+import app.model.DijktraVertex;
 import app.model.Edge;
 import app.model.MyGraph;
-import app.model.Vertex;
 
 /**
  * 09/06/2022.
@@ -17,51 +20,33 @@ import app.model.Vertex;
  */
 public class DijkstraService {
 
-	public List<Edge> findShortestPath(final MyGraph graph, final Vertex start, final Vertex end) {
+	public List<Edge> findShortestPath(final MyGraph graph, final Long startId, final Long endId) {
 
-		Vertex currentVertex = start;
+		final Set<DijktraVertex> unvisitedVertices = graph.mapToDijktraVertices();
+		final DijktraVertex start = getDijktraVertexById(startId, unvisitedVertices)
+																					.orElseThrow();
 
-		final VertexComparator comparator = new VertexComparator(end);
-		final List<Vertex> unvisitedVertex = new ArrayList<>(graph.getVertices());
+		final DijktraVertex end = getDijktraVertexById(endId, unvisitedVertices)
+																				.orElseThrow();
+
+		final DijktraVertexComparator comparator = new DijktraVertexComparator(end);
+
+		DijktraVertex currentVertex = start;
 
 		start.setDistanceToOrigin(0);
 
 		while (currentVertex.getDistanceToOrigin() > -1) {
 
-			unvisitedVertex.remove(currentVertex);
+			unvisitedVertices.remove(currentVertex);
 
-			for (Edge edge : currentVertex.getEdges()) {
-
-				final Vertex neighbor = edge.getVertexEnd();
-				final int pathLengthToNeighbor = currentVertex.getDistanceToOrigin() + edge.getDistance();
-
-				int distanceToCompare;
-
-				if (!unvisitedVertex.contains(neighbor)) {
-					continue;
-				}
-
-				distanceToCompare = neighbor.getDistanceToOrigin();
-
-				if (distanceToCompare == -1 || pathLengthToNeighbor < distanceToCompare) {
-
-					neighbor.setDistanceToOrigin(pathLengthToNeighbor);
-
-					neighbor.setOptimalPathToVertex(
-							currentVertex.getOptimalPathToVertex());
-
-					neighbor.addEdgeToPath(edge);
-
-				}
-
-			}
+			checkNeighbors(currentVertex, unvisitedVertices);
 
 			if (currentVertex.equals(end)) {
 
 				return currentVertex.getOptimalPathToVertex();
 			}
 
-			currentVertex = Collections.min(unvisitedVertex, comparator);
+			currentVertex = Collections.min(unvisitedVertices, comparator);
 
 		}
 
@@ -69,4 +54,32 @@ public class DijkstraService {
 
 	}
 
+	private void checkNeighbors(final DijktraVertex currentVertex, final Set<DijktraVertex> unvisitedVertices) {
+
+		for (Edge edge : currentVertex.getEdges()) {
+
+			final Optional<DijktraVertex> neighbor = getDijktraVertexById(edge.getVertexEndId(), unvisitedVertices);
+
+			if (neighbor.isEmpty()) {
+				continue;
+			}
+
+			final int pathLengthToNeighbor = currentVertex.getDistanceToOrigin() + edge.getDistance();
+
+			final int distanceToCompare = neighbor.get().getDistanceToOrigin();
+
+			if (distanceToCompare == -1 || pathLengthToNeighbor < distanceToCompare) {
+
+				neighbor.get().setDistanceToOrigin(pathLengthToNeighbor);
+
+				neighbor.get().setOptimalPathToVertex(
+						currentVertex.getOptimalPathToVertex());
+
+				neighbor.get().addEdgeToPath(edge);
+
+			}
+
+		}
+
+	}
 }

@@ -1,9 +1,19 @@
 package app.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import app.exception.NoPathExist;
+import app.model.Edge;
 import app.model.MyGraph;
-import app.model.Vertex;
 
 /**
  * 10/06/2022.
@@ -14,57 +24,111 @@ class DijkstraServiceTest {
 
 	private final DijkstraService dijkstraService = new DijkstraService();
 
-	@Test
-	void test_simple_tree() {
+	private MyGraph simpleGraph;
 
-		Vertex start = new Vertex(1L);
-		Vertex vertex2 = new Vertex(2L);
-		Vertex vertex3 = new Vertex(3L);
-		Vertex vertex4 = new Vertex(4L);
-		Vertex end = new Vertex(5L);
+	@BeforeEach
+	private void setUpBaseGraph() {
 
-		start.addEdge(vertex2, 2);
-		start.addEdge(vertex3, 1);
-		vertex2.addEdge(vertex4, 36);
-		vertex2.addEdge(end, 42);
+		simpleGraph = new MyGraph();
 
-		MyGraph graph = new MyGraph();
+		simpleGraph.addVertex(5);
 
-		graph.getVertices().add(start);
-		graph.getVertices().add(vertex2);
-		graph.getVertices().add(vertex3);
-		graph.getVertices().add(vertex4);
-		graph.getVertices().add(end);
-
-		System.out.println(dijkstraService.findShortestPath(graph, start, end));
+		simpleGraph.addEdge(1L, 2L, 2);
+		simpleGraph.addEdge(1L, 3L, 1);
+		simpleGraph.addEdge(2L, 4L, 36);
+		simpleGraph.addEdge(2L, 5L, 42);
 
 	}
 
 	@Test
+	@DisplayName(value = "simple-graph-00.jpg")
+	void test_simple_tree() {
+
+		final Edge[] expectedResult = { new Edge(2L, 2), new Edge(5L, 42) };
+
+		final List<Edge> actualResult = dijkstraService.findShortestPath(simpleGraph, 1L, 5L);
+
+		assertThat(actualResult).containsExactly(expectedResult);
+
+	}
+
+	@Test
+	@DisplayName(value = "simple-graph-01.jpg")
 	void test_simple_tree2() {
 
-		Vertex start = new Vertex(1L);
-		Vertex vertex2 = new Vertex(2L);
-		Vertex vertex3 = new Vertex(3L);
-		Vertex vertex4 = new Vertex(4L);
-		Vertex end = new Vertex(5L);
+		final Edge[] expectedResult = { new Edge(2L, 2), new Edge(4L, 36), new Edge(5L, 1) };
 
-		start.addEdge(vertex2, 2);
-		start.addEdge(end, 74);
-		start.addEdge(vertex3, 1);
-		vertex2.addEdge(vertex4, 36);
-		vertex2.addEdge(end, 42);
-		vertex4.addEdge(end, 1);
+		simpleGraph.addEdge(4L, 5L, 1);
 
-		MyGraph graph = new MyGraph();
+		final List<Edge> actualResult = dijkstraService.findShortestPath(simpleGraph, 1L, 5L);
 
-		graph.getVertices().add(start);
-		graph.getVertices().add(vertex2);
-		graph.getVertices().add(vertex3);
-		graph.getVertices().add(vertex4);
-		graph.getVertices().add(end);
+		assertThat(actualResult).containsExactly(expectedResult);
 
-		System.out.println(dijkstraService.findShortestPath(graph, start, end));
+	}
+
+	@Test
+	@DisplayName(value = "start=end")
+	void when_start_equal_end_should_empty() {
+
+		final List<Edge> actualResult = dijkstraService.findShortestPath(simpleGraph, 1L, 1L);
+
+		assertThat(actualResult).isEmpty();
+
+	}
+
+	@Test
+	@DisplayName(value = "Start id is null")
+	void when_start_id_is_null() {
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(
+				() -> dijkstraService.findShortestPath(simpleGraph, null, 5L));
+
+	}
+
+	@Test
+	@DisplayName(value = "End id is negative")
+	void when_end_id_is_negative() {
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(
+				() -> dijkstraService.findShortestPath(simpleGraph, 1L, -5L));
+
+	}
+
+	@Test
+	@DisplayName(value = "Start id not in graph")
+	void when_start_id_is_not_in_the_graph() {
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(
+				() -> dijkstraService.findShortestPath(simpleGraph, 7L, 5L));
+
+	}
+
+	@Test
+	@DisplayName(value = "End id not in graph")
+	void when_end_id_is_not_in_the_graph() {
+
+		assertThatExceptionOfType(NoSuchElementException.class).isThrownBy(
+				() -> dijkstraService.findShortestPath(simpleGraph, 1L, 7L));
+
+	}
+
+	@Test
+	@DisplayName(value = "no path beween start and end")
+	void when_start_and_end_are_not_connected() {
+
+		simpleGraph.removeEdge(2L, new Edge(5L, 42));
+
+		assertThatExceptionOfType(NoPathExist.class).isThrownBy(
+				() -> dijkstraService.findShortestPath(simpleGraph, 1L, 5L));
+
+	}
+
+	@Test
+	@DisplayName(value = "Graph is null")
+	void when_graph_is_null() {
+
+		assertThatNullPointerException().isThrownBy(
+				() -> dijkstraService.findShortestPath(null, 1L, 5L));
 
 	}
 

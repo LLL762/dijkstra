@@ -17,28 +17,32 @@ import lombok.RequiredArgsConstructor;
 public class Vertex {
 
 	private final Long id;
+	private String name;
 	private List<Edge> edges = new ArrayList<>();
-	private List<Edge> optimalPathToVertex = new ArrayList<>();
-	private int distanceToOrigin = -1; // -1 represents infinity.
+
+	protected Vertex(Long id, String name, List<Edge> edges) {
+		this.id = id;
+		this.name = name;
+		this.edges = edges;
+	}
 
 	public void addEdge(Vertex vertex, int distance) {
 
-		final Edge edge = new Edge(this, vertex, distance);
+		final Edge edge = new Edge(vertex.getId(), distance);
 
 		this.edges.add(edge);
-		vertex.edges.add(new Edge(vertex, this, distance));
 
 	}
 
-	public void addEdgeToPath(Edge edge) {
+	public void removeEdge(Edge edge) {
 
-		optimalPathToVertex.add(edge);
+		this.edges.remove(edge);
 
 	}
 
-	public List<Edge> getOptimalPathToVertex() {
+	public Vertex copy() {
 
-		return new ArrayList<>(optimalPathToVertex);
+		return new Vertex(this.id, this.name, edges.stream().map(Edge::copy).toList());
 
 	}
 

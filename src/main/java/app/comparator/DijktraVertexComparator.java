@@ -2,16 +2,16 @@ package app.comparator;
 
 import java.util.Comparator;
 
-import app.model.Vertex;
+import app.model.DijktraVertex;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class VertexComparator implements Comparator<Vertex> {
+public class DijktraVertexComparator implements Comparator<DijktraVertex> {
 
-	private final Vertex endVertex;
+	private final DijktraVertex endVertex;
 
 	@Override
-	public int compare(final Vertex v1, final Vertex v2) {
+	public int compare(final DijktraVertex v1, final DijktraVertex v2) {
 
 		final int distance1 = v1.getDistanceToOrigin();
 		final int distance2 = v2.getDistanceToOrigin();
